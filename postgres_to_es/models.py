@@ -3,8 +3,6 @@ import json
 import os
 from typing import Any, Optional
 
-from postgres_to_es.config import logger
-
 
 class BaseStorage:
     """

@@ -16,9 +16,9 @@ FILE_NAME = 'storage.json'
 # Postgres settings
 PAGE = 50
 dsl = {
-    'dbname': os.getenv('dbname'),
-    'user': os.getenv('user'),
-    'password': os.getenv('password'),
-    'host': os.getenv('host'),
-    'port': os.getenv('port')
+    'dbname': os.getenv('dbname', 'postgres'),
+    'user': os.getenv('user', 'postgres'),
+    'password': os.getenv('password', 'postgres'),
+    'host': os.getenv('host', 'localhost'),
+    'port': os.getenv('port', 5432)
 }

@@ -1,7 +1,10 @@
 import json
+from urllib.error import HTTPError
 from urllib.parse import urljoin
 
+import backoff
 import requests
+from elasticsearch import ElasticsearchException
 
 from postgres_to_es.config import logger
 
@@ -35,6 +38,11 @@ class ESLoader:
 
         return prepared_query
 
+    @backoff.on_exception(
+        wait_gen=backoff.expo,
+        exception=(ElasticsearchException, HTTPError),
+        max_tries=10,
+    )
     def load_to_es(self, records: list[dict], index_name: str):
         """Sending a request to ES and parsing data saving errors."""
 

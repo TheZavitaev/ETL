@@ -3,7 +3,6 @@ import os
 from functools import wraps
 from time import sleep
 
-import backoff
 import psycopg2
 from elasticsearch import Elasticsearch
 from psycopg2.extras import DictCursor
@@ -26,7 +25,6 @@ def coroutine(func):
     return inner
 
 
-@backoff.on_exception(backoff.expo, BaseException)
 def etl(target):
     json_file_storage = JsonFileStorage(FILE_NAME)
     state = State(json_file_storage)
@@ -53,7 +51,6 @@ def etl(target):
 
 
 @coroutine
-@backoff.on_exception(backoff.expo, BaseException)
 def extract(target, extractor: PostgresExtractor):
     """Retrieving non-indexed data."""
 
@@ -69,7 +66,6 @@ def extract(target, extractor: PostgresExtractor):
 
 
 @coroutine
-@backoff.on_exception(backoff.expo, BaseException)
 def transform(target, transformer: Transformer):
     """Preparing records for uploading to ES."""
 
@@ -83,7 +79,6 @@ def transform(target, transformer: Transformer):
 
 
 @coroutine
-@backoff.on_exception(backoff.expo, BaseException)
 def load(loader: ESLoader):
     """Load to ES."""
 
@@ -93,9 +88,9 @@ def load(loader: ESLoader):
         if len(transformed) == 0:
             continue
 
-        logger.info(f'ETL. Loaded start {table}. {len(transformed)} items.')
+        logger.debug(f'ETL. Loaded start {table}. {len(transformed)} items.')
         loader.load(transformed, table)
-        logger.info(f'ETL. Loaded stop {table}. {len(transformed)} items.')
+        logger.debug(f'ETL. Loaded stop {table}. {len(transformed)} items.')
 
 
 if __name__ == '__main__':

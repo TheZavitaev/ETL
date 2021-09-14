@@ -1,7 +1,7 @@
-from postgres_to_es.config import PAGE, logger
-
 from psycopg2.extensions import connection as _connection
 from psycopg2.extras import RealDictCursor
+
+from postgres_to_es.config import PAGE, logger
 
 
 class PostgresExtractor:
@@ -21,7 +21,7 @@ class PostgresExtractor:
             SELECT
                 id,
                 {column} 
-            FROM public."content.{table}" d 
+            FROM content."content.{table}" d 
             WHERE d.modified <= to_date( '{str(pointer_end_date)}', 'YYYY-MM-DD HH24:MI:SS' ) 
             AND d.modified > to_date( '{str(pointer_begin_date)}', 'YYYY-MM-DD HH24:MI:SS' )
         """

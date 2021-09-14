@@ -51,3 +51,5 @@ ENV/
 
 # auto generated docs
 doc.html
+/postgres_to_es/etl.log
+/postgres_to_es/storage.json
