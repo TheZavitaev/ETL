@@ -1,70 +1,52 @@
-import abc
-import json
-import os
-from typing import Any, Optional
+import dataclasses
+import datetime
+import typing
+import uuid
 
 
-class BaseStorage:
-    """
-    The implementation is borrowed from the simulator:
-    https://practicum.yandex.ru/learn/middle-python/courses/af061b15-1607-45f2-8d34-f88d4b21765a/
-    sprints/7099/topics/665ba0d6-6eab-41d5-84dd-bbc1997930fb/lessons/5fb40521-4548-487c-b840-f1d760b4ada9/
-    """
+@dataclasses.dataclass
+class Person:
+    id: uuid
+    name: str
 
-    @abc.abstractmethod
-    def save_state(self, state: dict) -> None:
-        """Save state to persistent storage"""
+    @classmethod
+    def from_dict(cls, dict_: dict[str, typing.Any]):
+        if dict_:
+            return cls(
+                id=dict_['id'],
+                name=dict_['name']
+            )
+        return None
 
-        pass
-
-    @abc.abstractmethod
-    def retrieve_state(self) -> dict:
-        """Load state locally from persistent storage"""
-
-        pass
-
-
-class JsonFileStorage(BaseStorage):
-    def __init__(self, file_path: Optional[str] = None):
-        self.file_path = file_path
-
-        if not os.path.exists(self.file_path):
-            with open(self.file_path, 'w') as file:
-                json.dump(dict(), file)
-
-    def save_state(self, state: dict) -> None:
-        """Save state to persistent storage"""
-
-        data = self.retrieve_state()
-        data.update(state)
-
-        with open(self.file_path, 'w') as file:
-            json.dump(data, file)
-
-    def retrieve_state(self) -> dict:
-        """Load state locally from persistent storage"""
-
-        with open(self.file_path, 'r') as file:
-            return json.load(file)
+    @classmethod
+    def from_dict_list(cls, iterable: typing.Iterable[dict]) -> list['Person']:
+        if iterable:
+            return [cls.from_dict(it) for it in iterable]
+        return []
 
 
-class State:
-    """
-    A class for storing state when working with data, so as not to constantly re-read the data from the beginning.
-    """
+@dataclasses.dataclass
+class Movie:
+    id: uuid
+    title: str
+    description: str
+    imdb_rating: float
+    genres: list[str]
+    writers: list[Person]
+    actors: list[Person]
+    director: list[Person]
+    updated_at: datetime
 
-    def __init__(self, storage: BaseStorage):
-        self.storage = storage
-
-    def set_state(self, key: str, value: Any) -> None:
-        """Set state for a specific key"""
-
-        self.storage.save_state({f'{key}': value})
-
-    def get_state(self, key: str) -> Any:
-        """Get a state for a specific key"""
-
-        data = self.storage.retrieve_state()
-        if key in data.keys():
-            return data.get(key)
-        return
+    @classmethod
+    def from_dict(cls, dict_: dict[str, typing.Any]) -> 'Movie':
+        return cls(
+            id=dict_['id'],
+            title=str(dict_['title']),
+            description=str(dict_['description']),
+            imdb_rating=float(dict_['imdb_rating']),
+            genres=list(map(str, dict_['genres'])),
+            writers=Person.from_dict_list(dict_['writers']),
+            actors=Person.from_dict_list(dict_['actors']),
+            director=Person.from_dict_list(dict_['directors']),
+            updated_at=dict_['updated_at'],
+        )

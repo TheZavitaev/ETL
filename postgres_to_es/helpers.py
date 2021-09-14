@@ -1,16 +1,25 @@
-import psycopg2
-from psycopg2.extras import DictCursor
+import dataclasses
+import datetime
+import json
+from functools import wraps
 
-from postgres_to_es.config import logger, dsl
+
+def coroutine(func):
+    @wraps(func)
+    def inner(*args, **kwargs):
+        fn = func(*args, **kwargs)
+        next(fn)
+        return fn
+
+    return inner
 
 
-def connect_to_database():
-    """Function to connect to Postgres."""
+class EnhancedJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if dataclasses.is_dataclass(o):
+            return dataclasses.asdict(o)
 
-    conn = None
-    try:
-        conn = psycopg2.connect(**dsl, cursor_factory=DictCursor)
-        return conn
-    except (Exception, psycopg2.DatabaseError) as error:
-        logger.info(f'ETL. Connect to Postgres ERROR. {error}')
-    return False
+        if isinstance(o, (datetime.date, datetime.datetime)):
+            return o.isoformat()
+
+        return super().default(o)

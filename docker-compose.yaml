@@ -3,6 +3,8 @@ version: '3.8'
 volumes:
   postgres_data:
   static_volume:
+  redisdata:
+  esdata:
 
 services:
   db:
@@ -43,3 +45,28 @@ services:
       - '80:80'
     depends_on:
       - admin_panel
+
+  es:
+    container_name: es
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.14.0
+    ports:
+      - 9200:9200
+    environment:
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - 'ES_JAVA_OPTS=-Xms512m -Xmx512m'
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+
+  redis:
+    restart: unless-stopped
+    container_name: redis
+    ports:
+      - 6379:6379
+    image: redis:6.2.5
+    volumes:
+      - redisdata:/data
